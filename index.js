@@ -1573,8 +1573,8 @@ io.on("connection", (socket) => {
         
         // DIRECTLY GO TO ELSE PART - REMOVED THE IF CONDITION
         console.log("else part mai agya hai");
-        if (modeValue == "Medium") {
-          console.log(modeValue, "309");
+        if (room.mode == "Medium") {
+          console.log(room.mode, "309");
           // console.log("+++++++++++no setMode is on+++++++++")
           // console.log("+++++++++++++++++++medium++++++++++++++++++++++++++++++++")
           var room = await tripleChance.findById(roomId);
@@ -1691,8 +1691,8 @@ io.on("connection", (socket) => {
                 "++++++data nahi ayya error khaya++++++++"
               ); // Print any errors
             });
-        } else if (modeValue == "High") {
-          console.log(modeValue, "396");
+        } else if (room.mode == "High") {
+          console.log(room.mode, "396");
           console.log("+++++++++++setMode is on+++++++++");
           console.log(
             "+++++++++++++++++++High++++++++++++++++++++++++++++++++"
@@ -1839,7 +1839,7 @@ io.on("connection", (socket) => {
                 "++++++data nahi ayya error khaya++++++++"
               ); // Print any errors
             });
-        } else if (modeValue == "Low") {
+        } else if (room.mode == "Low") {
           console.log("+++++++++++low setMode is on+++++++++");
           console.log(
             "+++++++++++++++++++low++++++++++++++++++++++++++++++++"
@@ -1969,7 +1969,7 @@ io.on("connection", (socket) => {
               ); // Print any errors
             });
         } else {
-          if (modeValue == "HighMedium") {
+          if (room.mode == "HighMedium") {
             // mode will be high Medium
             console.log("+++++++++++ setMode is on+++++++++");
             console.log(
