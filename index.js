@@ -1547,7 +1547,7 @@ io.on("connection", (socket) => {
           }
         }
 
-        let modeValue = room.mode || "none";
+        let modeValue = roomJJ.mode || "none";
         console.log(modeValue, "Current mode from database");
 
         // io.to(roomId).emit("roomData", room)
