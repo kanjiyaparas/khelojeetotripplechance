@@ -884,9 +884,12 @@ socket.on("start", async (body) => {
         io.to(roomId).emit("draw_time", room.draw_time);
         io.to(roomId).emit("gameId", room.gameId);
 
+        // Define roomJJ variable at the beginning
+        let roomJJ = null;
+        
         for (let i = 0; i < 176; i++) {
           io.to(roomId).emit("timer", 180 - i);
-          let roomJJ = await tripleChance.findById(roomId);
+          roomJJ = await tripleChance.findById(roomId); // Update roomJJ
           roomJJ.currentTime = (180 - i).toString();
           roomJJ = await roomJJ.save();
           await sleep(1000);
@@ -905,7 +908,15 @@ socket.on("start", async (body) => {
           }
         }
 
-        let modeValue = roomJJ.mode || "none";
+        // Check if roomJJ is defined
+        let modeValue = "none";
+        if (roomJJ) {
+          modeValue = roomJJ.mode || "none";
+        } else {
+          // Fallback to room variable
+          modeValue = room.mode || "none";
+        }
+        
         console.log(modeValue, "Current mode from database");
 
         // io.to(roomId).emit("roomData", room)
@@ -921,16 +932,31 @@ socket.on("start", async (body) => {
         io.to(roomId).emit("timer", 0);
         console.log(0);
         console.log(modeValue, "jjjjj");
+        
+        // Update room with current modeValue
         room = await tripleChance.findById(roomId);
+        if (!room) {
+          console.log(`Room ${roomId} not found after timer loop`);
+          break;
+        }
+        
         room.mode = modeValue;
         console.log(room.mode, "hhhhhhhhhh");
-        room = await tripleChance.findById(roomId);
         room = await room.save();
-        let count = 0;
+        
         console.log(room.mode, "++++++++++++++mode mil ya +++++++++++++");
         
         // DIRECTLY GO TO ELSE PART - REMOVED THE IF CONDITION
         console.log("else part mai agya hai");
+        
+        // Ensure room object is fresh
+        room = await tripleChance.findById(roomId);
+        if (!room) {
+          console.log(`Room ${roomId} not found for mode calculation`);
+          break;
+        }
+        
+        // Now check the mode
         if (room.mode == "Medium") {
           
           // API call for bet data
@@ -944,7 +970,8 @@ socket.on("start", async (body) => {
           console.log(room.mode, "309 (Updated Medium Logic)");
           console.log("+++++++++++++++++++medium++++++++++++++++++++++++++++++++");
           
-          var room = await tripleChance.findById(roomId);
+          // Refresh room data
+          room = await tripleChance.findById(roomId);
 
           // Function to calculate all card/payout sums (re-factored for clarity)
           function calculateAllPayouts(arr) {
@@ -1102,7 +1129,10 @@ socket.on("start", async (body) => {
           console.log(
             "+++++++++++++++++++High++++++++++++++++++++++++++++++++"
           );
-          var room = await tripleChance.findById(roomId);
+          
+          // Refresh room data
+          room = await tripleChance.findById(roomId);
+          
           function findCardsInRange(arr) {
             var array = arr;
             let final = array.length - 1;
@@ -1148,7 +1178,6 @@ socket.on("start", async (body) => {
           let outputPlayerSumArray = result.playerSumArray;
 
           //checking if bet==0then random result will be shouwn
-          var room = await tripleChance.findById(roomId);
           var totalSum = room.totalBetSum;
           var slot;
           if (totalSum == 0) {
@@ -1240,9 +1269,11 @@ socket.on("start", async (body) => {
           console.log(
             "+++++++++++++++++++low++++++++++++++++++++++++++++++++"
           );
+          
+          // Refresh room data
           room = await tripleChance.findById(roomId);
 
-          console.log(room, 'room data when low mode is on');
+          console.log('room data when low mode is on');
 
           const localTotalSum = room.cardsValue1.reduce((sum, cardData) => {
             return sum + (cardData.value || 0);
@@ -1287,7 +1318,7 @@ socket.on("start", async (body) => {
           // 2. Handle Zero Total Bet Case (totalSum should now be correct)
           if (totalSum == 0) {
             console.log("Total bet is zero, picking random.");
-            var slot = Math.floor(Math.random() * (999 - 100 + 1)) + 100;
+            slot = Math.floor(Math.random() * (999 - 100 + 1)) + 100;
             foundSlot = true;
           }
 
@@ -1395,7 +1426,10 @@ socket.on("start", async (body) => {
             console.log(
               "+++++++++++++++++++High Medium++++++++++++++++++++++++++++++++"
             );
-            var room = await tripleChance.findById(roomId);
+            
+            // Refresh room data
+            room = await tripleChance.findById(roomId);
+            
             function findCardsInRange(arr) {
               var array = arr;
               console.log("++++++++++ghus gya  mai+++++++++++++");
@@ -1456,7 +1490,6 @@ socket.on("start", async (body) => {
             );
             let filterElement = [];
             let filterElementCorrespondingSlot = [];
-            var room = await tripleChance.findById(roomId);
             var totalSum = room.totalBetSum;
             for (let i = 0; i < outputPlayerSumArray.length; i++) {
               if (outputPlayerSumArray[i] < totalSum) {
@@ -1484,8 +1517,7 @@ socket.on("start", async (body) => {
               console.log(slot, "LLLLL");
             } else {
               const randomNumber = Math.floor(Math.random() * output.length);
-              const slot = output[randomNumber];
-
+              slot = output[randomNumber];
               console.log(slot, "MMMMMMMM");
             }
             io.to(roomId).emit("slot", slot);
@@ -1530,6 +1562,7 @@ socket.on("start", async (body) => {
           }
         }
 
+        // Reset for next round
         room.cardsValue1 = myData;
         room.totalBetSum = 0;
         room.mode = "Medium";
@@ -1537,7 +1570,7 @@ socket.on("start", async (body) => {
         await room.save();
 
         console.log("one round complete");
-        await sleep(15000);
+        await sleep(18000);
 
         const deleteX = async () => {
           try {
@@ -1573,12 +1606,16 @@ socket.on("start", async (body) => {
       } while (room != null && room.players.length > 0);
       
       // Clean up running game
-      runningGames.delete(roomId);
+      if (roomId) {
+        runningGames.delete(roomId);
+      }
       
     } catch (error) {
       console.log("Error in start event:", error);
       // Clean up on error
-      runningGames.delete(roomId);
+      if (roomId) {
+        runningGames.delete(roomId);
+      }
     }
   });
 
