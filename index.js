@@ -158,39 +158,35 @@ io.on("connection", (socket) => {
             console.log(
               "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
             );
-            // async function sendBetSumRequest() {
-            //   try {
-            //     const formData = new URLSearchParams();
-            //     formData.append("GameId", gameId); // No newline character
-            //     formData.append("gameName", "tripleChance"); // Added 'game' parameter
+            async function sendBetSumRequest() {
+              try {
+                const formData = new URLSearchParams();
+                formData.append("GameId", gameId); // No newline character
+                formData.append("gameName", "tripleChance"); // Added 'game' parameter
 
-            //     const response = await axios.post(
-            //       "https://admin.khelojeetogame.com/api/player-bet-sum",
-            //       formData,
-            //       {
-            //         headers: {
-            //           "Content-Type": "application/x-www-form-urlencoded",
-            //         },
-            //       }
-            //     );
+                const response = await axios.post(
+                  "https://admin.khelojeetogame.com/api/player-bet-sum",
+                  formData,
+                  {
+                    headers: {
+                      "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                  }
+                );
 
-            //     console.log("API Response:", response.data);
-            //     roomJJ.totalBetSum = response.data.totalValueSum;
-            //     roomJJ.cardsValue1 = response.data.cardValueSet;
-            //     roomJJ = await roomJJ.save();
-            //     console.log(roomJJ.totalBetSum, "kkkkkkkkkkkkkkkkkkk");
-            //   } catch (error) {
-            //     console.error(
-            //       "API Error:",
-            //       error.response ? error.response.data : error.message
-            //     );
-            //   }
-            // }
-            // sendBetSumRequest();
-
-             console.log("Using local bet data instead of API call");
-          console.log("Total Bet Sum:", roomJJ.totalBetSum);
-          console.log("Mode:", roomJJ.mode);
+                console.log("API Response:", response.data);
+                roomJJ.totalBetSum = response.data.totalValueSum;
+                roomJJ.cardsValue1 = response.data.cardValueSet;
+                roomJJ = await roomJJ.save();
+                console.log(roomJJ.totalBetSum, "kkkkkkkkkkkkkkkkkkk");
+              } catch (error) {
+                console.error(
+                  "API Error:",
+                  error.response ? error.response.data : error.message
+                );
+              }
+            }
+            sendBetSumRequest();
 
             io.to(roomId).emit("timer", 4)
             break;
@@ -203,50 +199,49 @@ io.on("connection", (socket) => {
 
 
             
-              //    let modeValue = "none";
+                 let modeValue = "none";
        
-              //  // Your axios call
-              //  const getModeCall = async () => {
-              //    try {
-              //      const response = await axios.get(
-              //        "https://admin.khelojeetogame.com/api/winning-hotlist?game_name=triplechance"
-              //      );
-              //      return response.data;
-              //    } catch (error) {
-              //      console.error("Error fetching data: ", error);
-              //      throw error;
-              //    }
-              //  };
+               // Your axios call
+               const getModeCall = async () => {
+                 try {
+                   const response = await axios.get(
+                     "https://admin.khelojeetogame.com/api/winning-hotlist?game_name=triplechance"
+                   );
+                   return response.data;
+                 } catch (error) {
+                   console.error("Error fetching data: ", error);
+                   throw error;
+                 }
+               };
                
-              //  // Main function
-              //  const fetchAndSetMode = async () => {
-              //    try {
-              //      const data = await getModeCall();
+               // Main function
+               const fetchAndSetMode = async () => {
+                 try {
+                   const data = await getModeCall();
                    
-              //      if (data?.list?.length > 0) {
-              //        modeValue = data.list[0].win_type;
-              //        console.log(modeValue, "pppppppppppppp");
+                   if (data?.list?.length > 0) {
+                     modeValue = data.list[0].win_type;
+                     console.log(modeValue, "pppppppppppppp");
                
-              //        // Make sure roomJJ is fetched before this point
-              //        room.mode = modeValue;
-              //        await room.save(); // No reassignment needed
+                     // Make sure roomJJ is fetched before this point
+                     room.mode = modeValue;
+                     await room.save(); // No reassignment needed
                
-              //        console.log("Room updated in database.");
-              //      } else {
-              //        console.warn("No data found in the list");
-              //      }
-              //    } catch (error) {
-              //      console.error("Error:", error);
-              //    }
-              //  };
+                     console.log("Room updated in database.");
+                   } else {
+                     console.warn("No data found in the list");
+                   }
+                 } catch (error) {
+                   console.error("Error:", error);
+                 }
+               };
                
-              //  fetchAndSetMode();
+               fetchAndSetMode();
                
                
-              //    console.log(modeValue,"kkkkkkkkkkkkkkk")
+                 console.log(modeValue,"kkkkkkkkkkkkkkk")
            
-         let modeValue = room.mode || "none";
-      console.log(modeValue, "Current mode from database");
+
 
         // io.to(roomId).emit("roomData", room)
         io.to(roomId).emit("timer", 3);
