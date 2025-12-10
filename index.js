@@ -1492,7 +1492,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("start", async (body) => {
+ socket.on("start", async (body) => {
     try {
       console.log("---------------------------game started----------------------------");
       let roomId = body.roomId;
@@ -1570,147 +1570,405 @@ io.on("connection", (socket) => {
         room = await room.save();
         let count = 0;
         console.log(room.mode, "++++++++++++++mode mil ya +++++++++++++");
-        if (
-          modeValue == "none" ||
-          modeValue === "" ||
-          modeValue === " " ||
-          modeValue == "Medium" ||
-          modeValue == null
-        ) {
-          if (count == 3) {
-            mode = "HighMedium";
-            count = 0;
-          } else if (count >= 0 && count < 3) {
-            mode = "Medium";
-            count++;
-          }
+        
+        // DIRECTLY GO TO ELSE PART - REMOVED THE IF CONDITION
+        console.log("else part mai agya hai");
+        if (modeValue == "Medium") {
+          console.log(modeValue, "309");
+          // console.log("+++++++++++no setMode is on+++++++++")
+          // console.log("+++++++++++++++++++medium++++++++++++++++++++++++++++++++")
+          var room = await tripleChance.findById(roomId);
+          function findCardsInRange(arr) {
+            var array = arr;
+            // console.log(array, "++++187++++++")
+            let final = array.length - 1;
+            // console.log(final, "+++++final++++++++")
+            let initial = array.length - 1000;
+            // console.log(initial, "+++++++++++++initial++++++++++++++++++")
+            // let totalSum = array.reduce((sum, num) => {
+            //     return sum + num.value
+            // }, 0)
 
-          console.log(count, "+++++++count+++++++++++");
-          if (mode == "Medium") {
-            // console.log("+++++++++++no setMode is on+++++++++")
-            // console.log("+++++++++++++++++++medium++++++++++++++++++++++++++++++++")
-            var room = await tripleChance.findById(roomId);
-            function findCardsInRange(arr) {
-              var array = arr;
-              // console.log(array, "++++187++++++")
-              let final = array.length - 1;
-              // console.log(final, "+++++final++++++++")
-              let initial = array.length - 1000;
-              // console.log(initial, "+++++++++++++initial++++++++++++++++++")
-              // let totalSum = array.reduce((sum, num) => {
-              //     return sum + num.value
-              // }, 0)
+            var totalSum = room.totalBetSum;
+            // console.log(totalSum, "++++++++++totalSum++++++++++")
+            let finalArray = [];
+            let playerSumArray = [];
+            for (let i = final; i >= initial; i--) {
+              var card = array[i].card;
+              let value = array[i].value;
+              let tripleDigit = card;
+              let doubleDigit = card.slice(1);
+              let singleDigit = card.slice(2);
+              // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
 
-              var totalSum = room.totalBetSum;
-              // console.log(totalSum, "++++++++++totalSum++++++++++")
-              let finalArray = [];
-              let playerSumArray = [];
-              for (let i = final; i >= initial; i--) {
-                var card = array[i].card;
-                let value = array[i].value;
-                let tripleDigit = card;
-                let doubleDigit = card.slice(1);
-                let singleDigit = card.slice(2);
-                // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
-
-                let sum1 = 0,
-                  sum2 = 0,
-                  sum3 = 0;
-                let data1 = array.find(
-                  (element) => element.card === tripleDigit
-                );
-                sum1 = data1.value * 900;
-                // console.log(sum1,"sum111111111111")
-                let data2 = array.find(
-                  (element) => element.card === doubleDigit
-                );
-                sum2 = data2.value * 90;
-                // console.log(sum2,"sum22222222")
-                let data3 = array.find(
-                  (element) => element.card === singleDigit
-                );
-                sum3 = data3.value * 9;
-                // console.log(sum3,"sum3333333333")
-                let sum = sum1 + sum2 + sum3;
-                // console.log(sum)
-                if (sum <= 1 * totalSum && sum > 0 * totalSum) {
-                  finalArray.push(card);
-                  playerSumArray.push(sum);
-                }
-              }
-              return { finalArray, playerSumArray };
-            }
-            // Usage:
-            // console.log(room.cardsValue1, "+++229+++++")
-            let result = findCardsInRange(room.cardsValue1);
-            let output = result.finalArray;
-            let outputPlayerSumArray = result.playerSumArray;
-            console.log(output);
-            let randomIndex = Math.floor(Math.random() * output.length);
-            if (output.length == 0) {
-              var slot = Math.floor(Math.random() * (900 - 101 + 1)) + 101;
-              console.log(slot);
-              io.to(roomId).emit("slot", slot);
-              console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
-            } else {
-              // // const randomBet=loweArray[randomIndex]
-              console.log(randomIndex, "kkkkkk");
-              // const index=output.indexOf(randomBet)
-              if (randomIndex == -1) {
-                var slot = Math.floor(Math.random() * (900 - 101 + 1)) + 101;
-                console.log(slot);
-                io.to(roomId).emit("slot", slot);
-                console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
-              } else {
-                var slot = output[randomIndex];
-                io.to(roomId).emit("slot", slot);
-                console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
+              let sum1 = 0,
+                sum2 = 0,
+                sum3 = 0;
+              let data1 = array.find(
+                (element) => element.card === tripleDigit
+              );
+              sum1 = data1.value * 900;
+              // console.log(sum1,"sum111111111111")
+              let data2 = array.find(
+                (element) => element.card === doubleDigit
+              );
+              sum2 = data2.value * 90;
+              // console.log(sum2,"sum22222222")
+              let data3 = array.find(
+                (element) => element.card === singleDigit
+              );
+              sum3 = data3.value * 9;
+              // console.log(sum3,"sum3333333333")
+              let sum = sum1 + sum2 + sum3;
+              // console.log(sum)
+              if (sum <= 1 * totalSum && sum > 0 * totalSum) {
+                finalArray.push(card);
+                playerSumArray.push(sum);
               }
             }
-
-            //    game_data_insert
-            const apiUrl1 =
-              "https://admin.khelojeetogame.com/api/live-data-from-node";
-            const requestData1 = {
-              win_number: slot.toString(),
-              game_name: "tripleChancePrint",
-            };
-
-            axios
-              .post(apiUrl1, requestData1)
-              .then((response) => {
-                console.log(
-                  response.data,
-                  "+++++++game Data insert data+++++++"
-                ); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-
-            const apiUrl2 =
-              "https://admin.khelojeetogame.com/api/result-from-node";
-            const requestData2 = {
-              win_number: slot.toString(),
-              game_id: gameId,
-            };
-            console.log("Request Data:", requestData2);
-            //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
-            axios
-              .post(apiUrl2, requestData2)
-              .then((response) => {
-                console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
+            return { finalArray, playerSumArray };
           }
+          // Usage:
+          // console.log(room.cardsValue1, "+++229+++++")
+          let result = findCardsInRange(room.cardsValue1);
+          let output = result.finalArray;
+          let = result.playerSumArray;
+
+          let randomIndex = Math.floor(Math.random() * output.length);
+          // // const randomBet=loweArray[randomIndex]
+          console.log(randomIndex, "kkkkkk");
+          // const index=output.indexOf(randomBet)
+          if (randomIndex == -1 || output.length == 0) {
+            var slot = Math.floor(Math.random() * (900 - 101 + 1)) + 101;
+            console.log(slot);
+            io.to(roomId).emit("slot", slot);
+            console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
+          } else {
+            var slot = output[randomIndex];
+            io.to(roomId).emit("slot", slot);
+            console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
+          }
+
+          //    game_data_insert
+          const apiUrl1 =
+            "https://admin.khelojeetogame.com/api/live-data-from-node";
+          const requestData1 = {
+            win_number: slot.toString(),
+            game_name: "tripleChancePrint",
+          };
+
+          axios
+            .post(apiUrl1, requestData1)
+            .then((response) => {
+              console.log(
+                response.data,
+                "+++++++game Data insert data+++++++"
+              ); // Print the response data
+            })
+            .catch((error) => {
+              console.error(
+                error,
+                "++++++data nahi ayya error khaya++++++++"
+              ); // Print any errors
+            });
+
+          const apiUrl2 =
+            "https://admin.khelojeetogame.com/api/result-from-node";
+          const requestData2 = {
+            win_number: slot.toString(),
+            game_id: gameId,
+          };
+          console.log("Request Data:", requestData2);
+          //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
+          axios
+            .post(apiUrl2, requestData2)
+            .then((response) => {
+              console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
+            })
+            .catch((error) => {
+              console.error(
+                error,
+                "++++++data nahi ayya error khaya++++++++"
+              ); // Print any errors
+            });
+        } else if (modeValue == "High") {
+          console.log(modeValue, "396");
+          console.log("+++++++++++setMode is on+++++++++");
+          console.log(
+            "+++++++++++++++++++High++++++++++++++++++++++++++++++++"
+          );
+          var room = await tripleChance.findById(roomId);
+          function findCardsInRange(arr) {
+            var array = arr;
+            // console.log("++++++++++ghus gya  mai+++++++++++++")
+            let final = array.length - 1;
+            // console.log(final, "+++++final++++++++")
+            let initial = array.length - 1000;
+            // console.log(initial, "+++++++++++++initial++++++++++++++++++")
+            // let totalSum = array.reduce((sum, num) => {
+            //     return sum + num.value
+            // }, 0)
+            var totalSum = room.totalBetSum;
+            // console.log(totalSum, "++++++++++totalSum++++++++++")
+            let finalArray = [];
+            let playerSumArray = [];
+            for (let i = final; i >= initial; i--) {
+              var card = array[i].card;
+              let value = array[i].value;
+              let tripleDigit = card;
+              let doubleDigit = card.slice(1);
+              let singleDigit = card.slice(2);
+              // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
+
+              let sum1 = 0;
+              let sum2 = 0;
+              let sum3 = 0;
+              let data1 = array.find(
+                (element) => element.card === tripleDigit
+              );
+              sum1 = data1.value * 900;
+              // console.log(sum1,"sum111111111111")
+              let data2 = array.find(
+                (element) => element.card === doubleDigit
+              );
+              sum2 = data2.value * 90;
+              // console.log(sum2,"sum22222222")
+              let data3 = array.find(
+                (element) => element.card === singleDigit
+              );
+              sum3 = data3.value * 9;
+              // console.log(sum3,"sum3333333333")
+              let sum = sum1 + sum2 + sum3;
+              // console.log(sum)
+
+              finalArray.push(card);
+              playerSumArray.push(sum);
+            }
+            return { finalArray, playerSumArray };
+          }
+          // Usage:
+          let result = findCardsInRange(room.cardsValue1);
+          let output = result.finalArray;
+          console.log(output.length, "kkkk");
+          let outputPlayerSumArray = result.playerSumArray;
+
+          //checking if bet==0then random result will be shouwn
+          var room = await tripleChance.findById(roomId);
+          var totalSum = room.totalBetSum;
+          var slot;
+          if (totalSum == 0) {
+            console.log("sum is zero");
+            let RandomIndex = Math.floor(Math.random() * output.length);
+            console.log(typeof RandomIndex, "RandomIndex");
+            // console.log( RandomIndex )
+            slot = output[RandomIndex];
+            console.log(typeof slot, "kkkkk");
+          } else if (output.length == 0) {
+            console.log("output length is zero");
+            let RandomNumber = Math.floor(Math.random() * 800) + 100;
+            let stringRandomNumber = RandomNumber.toString();
+            console.log(typeof stringRandomNumber, "RandomIndex");
+            slot = stringRandomNumber;
+          } else {
+            let correspondingIndex = [];
+
+            let maxNumber = Math.max(...outputPlayerSumArray);
+            for (let element of outputPlayerSumArray) {
+              if (element == maxNumber) {
+                let index = outputPlayerSumArray.indexOf(element);
+                correspondingIndex.push(output[index]);
+                outputPlayerSumArray.splice(index, 1);
+                output.splice(index, 1);
+              }
+            }
+
+            console.log(
+              correspondingIndex,
+              "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+            );
+            let indexes = Math.floor(
+              Math.random() * correspondingIndex.length
+            );
+            console.log(correspondingIndex[indexes]);
+            slot = correspondingIndex[indexes];
+          }
+          io.to(roomId).emit("slot", slot);
+          console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
+
+          //    game_data_insert
+          const apiUrl1 =
+            "https://admin.khelojeetogame.com/api/live-data-from-node";
+          const requestData1 = {
+            win_number: slot.toString(),
+            game_name: "tripleChancePrint",
+          };
+
+          axios
+            .post(apiUrl1, requestData1)
+            .then((response) => {
+              console.log(
+                response.data,
+                "+++++++game Data insert data+++++++"
+              ); // Print the response data
+            })
+            .catch((error) => {
+              console.error(
+                error,
+                "++++++data nahi ayya error khaya++++++++"
+              ); // Print any errors
+            });
+
+          // all data of the user
+
+          const apiUrl2 =
+            "https://admin.khelojeetogame.com/api/result-from-node";
+          const requestData2 = {
+            win_number: slot.toString(),
+            game_id: gameId,
+          };
+          console.log("Request Data:", requestData2);
+          //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
+          axios
+            .post(apiUrl2, requestData2)
+            .then((response) => {
+              console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
+            })
+            .catch((error) => {
+              console.error(
+                error,
+                "++++++data nahi ayya error khaya++++++++"
+              ); // Print any errors
+            });
+        } else if (modeValue == "Low") {
+          console.log("+++++++++++low setMode is on+++++++++");
+          console.log(
+            "+++++++++++++++++++low++++++++++++++++++++++++++++++++"
+          );
+          room = await tripleChance.findById(roomId);
+          function findCardsInRange(arr) {
+            var array = arr;
+            // console.log("++++++++++ghus gya  mai+++++++++++++")
+            let final = array.length - 1;
+            // console.log(final, "+++++final++++++++")
+            let initial = array.length - 1000;
+            // console.log(initial, "+++++++++++++initial++++++++++++++++++")
+            let totalSum = array.reduce((sum, num) => {
+              return sum + num.value;
+            }, 0);
+
+            // var totalSum=room.totalBetSum
+            // console.log(totalSum, "++++++++++totalSum++++++++++")
+            let finalArray = [];
+            let playerSumArray = [];
+            for (let i = final; i >= initial; i--) {
+              var card = array[i].card;
+              let value = array[i].value;
+              let tripleDigit = card;
+              let doubleDigit = card.slice(1);
+              let singleDigit = card.slice(2);
+              // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
+
+              let sum1 = 0;
+              let sum2 = 0;
+              let sum3 = 0;
+              let data1 = array.find(
+                (element) => element.card === tripleDigit
+              );
+              sum1 = data1.value * 900;
+              // console.log(sum1,"sum111111111111")
+              let data2 = array.find(
+                (element) => element.card === doubleDigit
+              );
+              sum2 = data2.value * 90;
+              // console.log(sum2,"sum22222222")
+              let data3 = array.find(
+                (element) => element.card === singleDigit
+              );
+              sum3 = data3.value * 9;
+              // console.log(sum3,"sum3333333333")
+              let sum = sum1 + sum2 + sum3;
+              // console.log(sum)
+
+              finalArray.push(card);
+              playerSumArray.push(sum);
+            }
+            return { finalArray, playerSumArray };
+          }
+          // Usage:
+          let result = findCardsInRange(room.cardsValue1);
+          let output = result.finalArray;
+          let outputPlayerSumArray = result.playerSumArray;
+          // console.log(output, "186666666666")
+          // console.log(outputPlayerSumArray, "17666666666666")
+
+          const minNumber = Math.min(...outputPlayerSumArray);
+          // console.log("Minimum Number:", minNumber);
+          let indexArray = [];
+          for (let i = 0; i < outputPlayerSumArray.length; i++) {
+            if (outputPlayerSumArray[i] === minNumber) {
+              indexArray.push(i);
+            }
+          }
+
+          // console.log("Indices of minimum number:", indexArray);
+
+          let n = Math.floor(Math.random() * indexArray.length); // Removed -1
+          // console.log("Random index:", n);
+
+          const randomIndex = indexArray[n];
+          // console.log("Corresponding random index from array1:", randomIndex);
+
+          const slot = output[randomIndex];
+          // console.log("Corresponding value from output:", slot);
+
+          io.to(roomId).emit("slot", slot);
+          console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
+
+          //    game_data_insert
+          const apiUrl1 =
+            "https://admin.khelojeetogame.com/api/live-data-from-node";
+          const requestData1 = {
+            win_number: slot.toString(),
+            game_name: "tripleChancePrint",
+          };
+
+          axios
+            .post(apiUrl1, requestData1)
+            .then((response) => {
+              console.log(
+                response.data,
+                "+++++++game Data insert data+++++++"
+              ); // Print the response data
+            })
+            .catch((error) => {
+              console.error(
+                error,
+                "++++++data nahi ayya error khaya++++++++"
+              ); // Print any errors
+            });
+
+          // all data of the user
+
+          const apiUrl2 =
+            "https://admin.khelojeetogame.com/api/result-from-node";
+          const requestData2 = {
+            win_number: slot.toString(),
+            game_id: gameId,
+          };
+          console.log("Request Data:", requestData2);
+          //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
+          axios
+            .post(apiUrl2, requestData2)
+            .then((response) => {
+              console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
+            })
+            .catch((error) => {
+              console.error(
+                error,
+                "++++++data nahi ayya error khaya++++++++"
+              ); // Print any errors
+            });
+        } else {
           if (modeValue == "HighMedium") {
             // mode will be high Medium
             console.log("+++++++++++ setMode is on+++++++++");
@@ -1860,558 +2118,6 @@ io.on("connection", (socket) => {
                   "++++++data nahi ayya error khaya++++++++"
                 ); // Print any errors
               });
-          }
-        } else {
-          console.log("else part mai agya hai");
-          if (modeValue == "Medium") {
-            console.log(modeValue, "309");
-            // console.log("+++++++++++no setMode is on+++++++++")
-            // console.log("+++++++++++++++++++medium++++++++++++++++++++++++++++++++")
-            var room = await tripleChance.findById(roomId);
-            function findCardsInRange(arr) {
-              var array = arr;
-              // console.log(array, "++++187++++++")
-              let final = array.length - 1;
-              // console.log(final, "+++++final++++++++")
-              let initial = array.length - 1000;
-              // console.log(initial, "+++++++++++++initial++++++++++++++++++")
-              // let totalSum = array.reduce((sum, num) => {
-              //     return sum + num.value
-              // }, 0)
-
-              var totalSum = room.totalBetSum;
-              // console.log(totalSum, "++++++++++totalSum++++++++++")
-              let finalArray = [];
-              let playerSumArray = [];
-              for (let i = final; i >= initial; i--) {
-                var card = array[i].card;
-                let value = array[i].value;
-                let tripleDigit = card;
-                let doubleDigit = card.slice(1);
-                let singleDigit = card.slice(2);
-                // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
-
-                let sum1 = 0,
-                  sum2 = 0,
-                  sum3 = 0;
-                let data1 = array.find(
-                  (element) => element.card === tripleDigit
-                );
-                sum1 = data1.value * 900;
-                // console.log(sum1,"sum111111111111")
-                let data2 = array.find(
-                  (element) => element.card === doubleDigit
-                );
-                sum2 = data2.value * 90;
-                // console.log(sum2,"sum22222222")
-                let data3 = array.find(
-                  (element) => element.card === singleDigit
-                );
-                sum3 = data3.value * 9;
-                // console.log(sum3,"sum3333333333")
-                let sum = sum1 + sum2 + sum3;
-                // console.log(sum)
-                if (sum <= 1 * totalSum && sum > 0 * totalSum) {
-                  finalArray.push(card);
-                  playerSumArray.push(sum);
-                }
-              }
-              return { finalArray, playerSumArray };
-            }
-            // Usage:
-            // console.log(room.cardsValue1, "+++229+++++")
-            let result = findCardsInRange(room.cardsValue1);
-            let output = result.finalArray;
-            let = result.playerSumArray;
-
-            let randomIndex = Math.floor(Math.random() * output.length);
-            // // const randomBet=loweArray[randomIndex]
-            console.log(randomIndex, "kkkkkk");
-            // const index=output.indexOf(randomBet)
-            if (randomIndex == -1 || output.length == 0) {
-              var slot = Math.floor(Math.random() * (900 - 101 + 1)) + 101;
-              console.log(slot);
-              io.to(roomId).emit("slot", slot);
-              console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
-            } else {
-              var slot = output[randomIndex];
-              io.to(roomId).emit("slot", slot);
-              console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
-            }
-
-            //    game_data_insert
-            const apiUrl1 =
-              "https://admin.khelojeetogame.com/api/live-data-from-node";
-            const requestData1 = {
-              win_number: slot.toString(),
-              game_name: "tripleChancePrint",
-            };
-
-            axios
-              .post(apiUrl1, requestData1)
-              .then((response) => {
-                console.log(
-                  response.data,
-                  "+++++++game Data insert data+++++++"
-                ); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-
-            const apiUrl2 =
-              "https://admin.khelojeetogame.com/api/result-from-node";
-            const requestData2 = {
-              win_number: slot.toString(),
-              game_id: gameId,
-            };
-            console.log("Request Data:", requestData2);
-            //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
-            axios
-              .post(apiUrl2, requestData2)
-              .then((response) => {
-                console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-          } else if (modeValue == "High") {
-            console.log(modeValue, "396");
-            console.log("+++++++++++setMode is on+++++++++");
-            console.log(
-              "+++++++++++++++++++High++++++++++++++++++++++++++++++++"
-            );
-            var room = await tripleChance.findById(roomId);
-            function findCardsInRange(arr) {
-              var array = arr;
-              // console.log("++++++++++ghus gya  mai+++++++++++++")
-              let final = array.length - 1;
-              // console.log(final, "+++++final++++++++")
-              let initial = array.length - 1000;
-              // console.log(initial, "+++++++++++++initial++++++++++++++++++")
-              // let totalSum = array.reduce((sum, num) => {
-              //     return sum + num.value
-              // }, 0)
-              var totalSum = room.totalBetSum;
-              // console.log(totalSum, "++++++++++totalSum++++++++++")
-              let finalArray = [];
-              let playerSumArray = [];
-              for (let i = final; i >= initial; i--) {
-                var card = array[i].card;
-                let value = array[i].value;
-                let tripleDigit = card;
-                let doubleDigit = card.slice(1);
-                let singleDigit = card.slice(2);
-                // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
-
-                let sum1 = 0;
-                let sum2 = 0;
-                let sum3 = 0;
-                let data1 = array.find(
-                  (element) => element.card === tripleDigit
-                );
-                sum1 = data1.value * 900;
-                // console.log(sum1,"sum111111111111")
-                let data2 = array.find(
-                  (element) => element.card === doubleDigit
-                );
-                sum2 = data2.value * 90;
-                // console.log(sum2,"sum22222222")
-                let data3 = array.find(
-                  (element) => element.card === singleDigit
-                );
-                sum3 = data3.value * 9;
-                // console.log(sum3,"sum3333333333")
-                let sum = sum1 + sum2 + sum3;
-                // console.log(sum)
-
-                finalArray.push(card);
-                playerSumArray.push(sum);
-              }
-              return { finalArray, playerSumArray };
-            }
-            // Usage:
-            let result = findCardsInRange(room.cardsValue1);
-            let output = result.finalArray;
-            console.log(output.length, "kkkk");
-            let outputPlayerSumArray = result.playerSumArray;
-
-            //checking if bet==0then random result will be shouwn
-            var room = await tripleChance.findById(roomId);
-            var totalSum = room.totalBetSum;
-            var slot;
-            if (totalSum == 0) {
-              console.log("sum is zero");
-              let RandomIndex = Math.floor(Math.random() * output.length);
-              console.log(typeof RandomIndex, "RandomIndex");
-              // console.log( RandomIndex )
-              slot = output[RandomIndex];
-              console.log(typeof slot, "kkkkk");
-            } else if (output.length == 0) {
-              console.log("output length is zero");
-              let RandomNumber = Math.floor(Math.random() * 800) + 100;
-              let stringRandomNumber = RandomNumber.toString();
-              console.log(typeof stringRandomNumber, "RandomIndex");
-              slot = stringRandomNumber;
-            } else {
-              let correspondingIndex = [];
-
-              let maxNumber = Math.max(...outputPlayerSumArray);
-              for (let element of outputPlayerSumArray) {
-                if (element == maxNumber) {
-                  let index = outputPlayerSumArray.indexOf(element);
-                  correspondingIndex.push(output[index]);
-                  outputPlayerSumArray.splice(index, 1);
-                  output.splice(index, 1);
-                }
-              }
-
-              console.log(
-                correspondingIndex,
-                "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
-              );
-              let indexes = Math.floor(
-                Math.random() * correspondingIndex.length
-              );
-              console.log(correspondingIndex[indexes]);
-              slot = correspondingIndex[indexes];
-            }
-            io.to(roomId).emit("slot", slot);
-            console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
-
-            //    game_data_insert
-            const apiUrl1 =
-              "https://admin.khelojeetogame.com/api/live-data-from-node";
-            const requestData1 = {
-              win_number: slot.toString(),
-              game_name: "tripleChancePrint",
-            };
-
-            axios
-              .post(apiUrl1, requestData1)
-              .then((response) => {
-                console.log(
-                  response.data,
-                  "+++++++game Data insert data+++++++"
-                ); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-
-            // all data of the user
-
-            const apiUrl2 =
-              "https://admin.khelojeetogame.com/api/result-from-node";
-            const requestData2 = {
-              win_number: slot.toString(),
-              game_id: gameId,
-            };
-            console.log("Request Data:", requestData2);
-            //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
-            axios
-              .post(apiUrl2, requestData2)
-              .then((response) => {
-                console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-          } else if (modeValue == "Low") {
-            console.log("+++++++++++low setMode is on+++++++++");
-            console.log(
-              "+++++++++++++++++++low++++++++++++++++++++++++++++++++"
-            );
-            room = await tripleChance.findById(roomId);
-            function findCardsInRange(arr) {
-              var array = arr;
-              // console.log("++++++++++ghus gya  mai+++++++++++++")
-              let final = array.length - 1;
-              // console.log(final, "+++++final++++++++")
-              let initial = array.length - 1000;
-              // console.log(initial, "+++++++++++++initial++++++++++++++++++")
-              let totalSum = array.reduce((sum, num) => {
-                return sum + num.value;
-              }, 0);
-
-              // var totalSum=room.totalBetSum
-              // console.log(totalSum, "++++++++++totalSum++++++++++")
-              let finalArray = [];
-              let playerSumArray = [];
-              for (let i = final; i >= initial; i--) {
-                var card = array[i].card;
-                let value = array[i].value;
-                let tripleDigit = card;
-                let doubleDigit = card.slice(1);
-                let singleDigit = card.slice(2);
-                // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
-
-                let sum1 = 0;
-                let sum2 = 0;
-                let sum3 = 0;
-                let data1 = array.find(
-                  (element) => element.card === tripleDigit
-                );
-                sum1 = data1.value * 900;
-                // console.log(sum1,"sum111111111111")
-                let data2 = array.find(
-                  (element) => element.card === doubleDigit
-                );
-                sum2 = data2.value * 90;
-                // console.log(sum2,"sum22222222")
-                let data3 = array.find(
-                  (element) => element.card === singleDigit
-                );
-                sum3 = data3.value * 9;
-                // console.log(sum3,"sum3333333333")
-                let sum = sum1 + sum2 + sum3;
-                // console.log(sum)
-
-                finalArray.push(card);
-                playerSumArray.push(sum);
-              }
-              return { finalArray, playerSumArray };
-            }
-            // Usage:
-            let result = findCardsInRange(room.cardsValue1);
-            let output = result.finalArray;
-            let outputPlayerSumArray = result.playerSumArray;
-            // console.log(output, "186666666666")
-            // console.log(outputPlayerSumArray, "17666666666666")
-
-            const minNumber = Math.min(...outputPlayerSumArray);
-            // console.log("Minimum Number:", minNumber);
-            let indexArray = [];
-            for (let i = 0; i < outputPlayerSumArray.length; i++) {
-              if (outputPlayerSumArray[i] === minNumber) {
-                indexArray.push(i);
-              }
-            }
-
-            // console.log("Indices of minimum number:", indexArray);
-
-            let n = Math.floor(Math.random() * indexArray.length); // Removed -1
-            // console.log("Random index:", n);
-
-            const randomIndex = indexArray[n];
-            // console.log("Corresponding random index from array1:", randomIndex);
-
-            const slot = output[randomIndex];
-            // console.log("Corresponding value from output:", slot);
-
-            io.to(roomId).emit("slot", slot);
-            console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
-
-            //    game_data_insert
-            const apiUrl1 =
-              "https://admin.khelojeetogame.com/api/live-data-from-node";
-            const requestData1 = {
-              win_number: slot.toString(),
-              game_name: "tripleChancePrint",
-            };
-
-            axios
-              .post(apiUrl1, requestData1)
-              .then((response) => {
-                console.log(
-                  response.data,
-                  "+++++++game Data insert data+++++++"
-                ); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-
-            // all data of the user
-
-            const apiUrl2 =
-              "https://admin.khelojeetogame.com/api/result-from-node";
-            const requestData2 = {
-              win_number: slot.toString(),
-              game_id: gameId,
-            };
-            console.log("Request Data:", requestData2);
-            //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
-            axios
-              .post(apiUrl2, requestData2)
-              .then((response) => {
-                console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
-              })
-              .catch((error) => {
-                console.error(
-                  error,
-                  "++++++data nahi ayya error khaya++++++++"
-                ); // Print any errors
-              });
-          } else {
-            if (modeValue == "HighMedium") {
-              // mode will be high Medium
-              console.log("+++++++++++ setMode is on+++++++++");
-              console.log(
-                "+++++++++++++++++++High Medium++++++++++++++++++++++++++++++++"
-              );
-              var room = await tripleChance.findById(roomId);
-              function findCardsInRange(arr) {
-                var array = arr;
-                console.log("++++++++++ghus gya  mai+++++++++++++");
-                let final = array.length - 1;
-                console.log(final, "+++++final++++++++");
-                let initial = array.length - 1000;
-                console.log(initial, "+++++++++++++initial++++++++++++++++++");
-                // let totalSum = array.reduce((sum, num) => {
-                //     return sum + num.value
-                // }, 0)
-
-                var totalSum = room.totalBetSum;
-                console.log(totalSum, "++++++++++totalSum++++++++++");
-                let finalArray = [];
-                let playerSumArray = [];
-                for (let i = final; i >= initial; i--) {
-                  var card = array[i].card;
-                  let value = array[i].value;
-                  let tripleDigit = card;
-                  let doubleDigit = card.slice(1);
-                  let singleDigit = card.slice(2);
-                  // console.log(tripleDigit,doubleDigit,singleDigit,"1633333333333333")
-                  let sum1 = 0;
-                  let sum2 = 0;
-                  let sum3 = 0;
-                  let data1 = array.find(
-                    (element) => element.card === tripleDigit
-                  );
-                  sum1 = data1.value * 900;
-                  // console.log(sum1,"sum111111111111")
-                  let data2 = array.find(
-                    (element) => element.card === doubleDigit
-                  );
-                  sum2 = data2.value * 90;
-                  // console.log(sum2,"sum22222222")
-                  let data3 = array.find(
-                    (element) => element.card === singleDigit
-                  );
-                  sum3 = data3.value * 9;
-                  // console.log(sum3,"sum3333333333")
-                  let sum = sum1 + sum2 + sum3;
-                  // console.log(sum)
-                  if (
-                    (sum < 1 * totalSum && sum > 0.8 * totalSum) ||
-                    (sum > 0.5 * totalSum && sum < 1.1 * totalSum) ||
-                    (sum > 0.4 * totalSum && sum < 1.1 * totalSum) ||
-                    (sum > 0.0 * totalSum && sum < 1.1 * totalSum) ||
-                    (sum > 0.5 * totalSum && sum < 2 * totalSum)
-                  ) {
-                    finalArray.push(card);
-                    playerSumArray.push(sum);
-                  }
-                }
-                return { finalArray, playerSumArray };
-              }
-              // Usage:
-              let result = findCardsInRange(room.cardsValue1);
-              let output = result.finalArray;
-              let outputPlayerSumArray = result.playerSumArray;
-              console.log(
-                outputPlayerSumArray,
-                "+++++outplayerSumArray++++++++"
-              );
-              let filterElement = [];
-              let filterElementCorrespondingSlot = [];
-              var room = await tripleChance.findById(roomId);
-              var totalSum = room.totalBetSum;
-              for (let i = 0; i < outputPlayerSumArray.length; i++) {
-                if (outputPlayerSumArray[i] < totalSum) {
-                  filterElement.push(outputPlayerSumArray[i]);
-                  filterElementCorrespondingSlot.push(i);
-                }
-              }
-              console.log(filterElement, "+++++++++++filterElament++++++++");
-              if (filterElement.length > 0) {
-                console.log("++++filter wla amai enter kar gaya+++++");
-                // const sortedArray1 = filterElement.sort((a, b) => a - b);
-                const randomNumber = Math.floor(
-                  Math.random() * filterElement.length - 1
-                );
-                console.log(randomNumber, "ppppppppppp");
-                const thirdMax = filterElementCorrespondingSlot[randomNumber];
-                // const thirdMaxIndex = outputPlayerSumArray.indexOf(thirdMax);
-                console.log(output);
-                // Step 2: Get the corresponding slot from array2 using the index obtained from array1
-                var slot = output[thirdMax];
-                console.log(slot, "kkkkkk");
-              } else if (output.length == 0) {
-                console.log("output length is zero");
-                let RandomNumber = Math.floor(Math.random() * 800) + 100;
-                let stringRandomNumber = RandomNumber.toString();
-                console.log(typeof stringRandomNumber, "RandomIndex");
-                var slot = stringRandomNumber;
-                console.log(slot, "LLLLL");
-              } else {
-                const randomNumber = Math.floor(Math.random() * output.length);
-                const slot = output[randomNumber];
-
-                console.log(slot, "MMMMMMMM");
-              }
-              io.to(roomId).emit("slot", slot);
-              console.log(slot);
-              // game_data_insert
-              const apiUrl1 =
-                "https://admin.khelojeetogame.com/api/live-data-from-node";
-              const requestData1 = {
-                win_number: slot.toString(),
-                game_name: "tripleChancePrint",
-              };
-
-              axios
-                .post(apiUrl1, requestData1)
-                .then((response) => {
-                  console.log(
-                    response.data,
-                    "+++++++game Data insert data+++++++"
-                  ); // Print the response data
-                })
-                .catch((error) => {
-                  console.error(
-                    error,
-                    "++++++data nahi ayya error khaya++++++++"
-                  ); // Print any errors
-                });
-              // all data of the user
-
-              const apiUrl2 =
-                "https://admin.khelojeetogame.com/api/result-from-node";
-              const requestData2 = {
-                win_number: slot.toString(),
-                game_id: gameId,
-              };
-              console.log("Request Data:", requestData2);
-              //   console.log(room.winPrice, "+++hhhhhhhhhhhhhhhhh+++++++");
-              axios
-                .post(apiUrl2, requestData2)
-                .then((response) => {
-                  console.log(response.data, "++++++++data aagyaa++++++"); // Print the response data
-                })
-                .catch((error) => {
-                  console.error(
-                    error,
-                    "++++++data nahi ayya error khaya++++++++"
-                  ); // Print any errors
-                });
-            }
           }
         }
 
