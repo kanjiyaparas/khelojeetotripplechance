@@ -960,12 +960,12 @@ socket.on("start", async (body) => {
         if (room.mode == "Medium") {
           
           // API call for bet data
-          const betData = await fetchBetData(roomId, room.gameId);
-          if (betData.success) {
-            room.totalBetSum = betData.totalBetSum;
-            room.cardsValue1 = betData.cardsValue1;
-            await room.save();
-          }
+          // const betData = await fetchBetData(roomId, room.gameId);
+          // if (betData.success) {
+          //   room.totalBetSum = betData.totalBetSum;
+          //   room.cardsValue1 = betData.cardsValue1;
+          //   await room.save();
+          // }
 
           console.log(room.mode, "309 (Updated Medium Logic)");
           console.log("+++++++++++++++++++medium++++++++++++++++++++++++++++++++");
@@ -1117,12 +1117,12 @@ socket.on("start", async (body) => {
         } else if (room.mode == "High") {
           
           // API call for bet data
-          const betData = await fetchBetData(roomId, room.gameId);
-          if (betData.success) {
-            room.totalBetSum = betData.totalBetSum;
-            room.cardsValue1 = betData.cardsValue1;
-            await room.save();
-          }
+          // const betData = await fetchBetData(roomId, room.gameId);
+          // if (betData.success) {
+          //   room.totalBetSum = betData.totalBetSum;
+          //   room.cardsValue1 = betData.cardsValue1;
+          //   await room.save();
+          // }
           
           console.log(room.mode, "396 (Updated High Logic)");
           console.log("+++++++++++setMode is on+++++++++");
@@ -1258,12 +1258,12 @@ socket.on("start", async (body) => {
         } else if (room.mode == "Low") {
           
           // API call for bet data
-          const betData = await fetchBetData(roomId, room.gameId);
-          if (betData.success) {
-            room.totalBetSum = betData.totalBetSum;
-            room.cardsValue1 = betData.cardsValue1;
-            await room.save();
-          }
+          // const betData = await fetchBetData(roomId, room.gameId);
+          // if (betData.success) {
+          //   room.totalBetSum = betData.totalBetSum;
+          //   room.cardsValue1 = betData.cardsValue1;
+          //   await room.save();
+          // }
           
           console.log("+++++++++++low setMode is on (Updated Custom Logic)+++++++++");
           console.log(
