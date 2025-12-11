@@ -897,6 +897,7 @@ socket.on("start", async (body) => {
             console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             console.log("Using local bet data instead of API call");
             console.log("Total Bet Sum:", roomJJ.totalBetSum);
+            console.log("cardValue1" , roomJJ.cardsValue1);
             console.log("Mode:", roomJJ.mode);
 
             io.to(roomId).emit("timer", 4);
@@ -932,7 +933,6 @@ socket.on("start", async (body) => {
         io.to(roomId).emit("timer", 0);
         console.log(0);
         console.log(modeValue, "jjjjj");
-        
         // Update room with current modeValue
         room = await tripleChance.findById(roomId);
         if (!room) {
