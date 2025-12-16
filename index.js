@@ -2279,7 +2279,7 @@ socket.on("start", async (body) => {
           const apiUrl1 = "https://admin.khelojeetogame.com/api/live-data-from-node";
           const requestData1 = {
             win_number: slot.toString(),
-            game_name: "tripleChancePrint",
+            game_name: "tripleChance",
           };
 
           const apiUrl2 = "https://admin.khelojeetogame.com/api/result-from-node";
@@ -2420,7 +2420,7 @@ socket.on("start", async (body) => {
           const apiUrl1 = "https://admin.khelojeetogame.com/api/live-data-from-node";
           const requestData1 = {
             win_number: slot.toString(),
-            game_name: "tripleChancePrint",
+            game_name: "tripleChance",
           };
 
           const apiUrl2 = "https://admin.khelojeetogame.com/api/result-from-node";
@@ -2587,7 +2587,7 @@ socket.on("start", async (body) => {
           const apiUrl1 = "https://admin.khelojeetogame.com/api/live-data-from-node";
           const requestData1 = {
             win_number: slot.toString(),
-            game_name: "tripleChancePrint",
+            game_name: "tripleChance",
           };
 
           const apiUrl2 = "https://admin.khelojeetogame.com/api/result-from-node";
@@ -2725,7 +2725,7 @@ socket.on("start", async (body) => {
             const apiUrl1 = "https://admin.khelojeetogame.com/api/live-data-from-node";
             const requestData1 = {
               win_number: slot.toString(),
-              game_name: "tripleChancePrint",
+              game_name: "tripleChance",
             };
 
             const apiUrl2 = "https://admin.khelojeetogame.com/api/result-from-node";
