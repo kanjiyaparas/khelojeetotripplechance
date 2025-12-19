@@ -460,6 +460,14 @@ const roomSchema = new mongoose.Schema({
         type:String,
         default:"tripleChance"
     },
+    highModePlayers: [{
+    playerId: String,
+    playerBetSum: Number,
+    cardValueSet: [{
+      card: String,
+      value: Number
+    }]
+  }],
 
 }, { versionKey: false });
 module.exports = mongoose.model("trippleChance", roomSchema);

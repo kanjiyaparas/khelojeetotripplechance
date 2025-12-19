@@ -1,6 +1,4 @@
 
-
-
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
@@ -1218,147 +1216,236 @@ socket.on("start", async (body) => {
           }
           
         } else if (room.mode == "High") {
-          
-          // API call for bet data
-          // const betData = await fetchBetData(roomId, room.gameId);
-          // if (betData.success) {
-          //   room.totalBetSum = betData.totalBetSum;
-          //   room.cardsValue1 = betData.cardsValue1;
-          //   await room.save();
-          // }
-          
-          console.log(room.mode, "396 (Updated High Logic)");
-          console.log("+++++++++++setMode is on+++++++++");
-          console.log(
-            "+++++++++++++++++++High++++++++++++++++++++++++++++++++"
-          );
-          
-          // Refresh room data
-          room = await tripleChance.findById(roomId);
-          
-          function findCardsInRange(arr) {
-            var array = arr;
-            let final = array.length - 1;
-            let initial = array.length - 1000;
-            
-            var totalSum = room.totalBetSum;
-            let finalArray = [];
-            let playerSumArray = [];
-            for (let i = final; i >= initial; i--) {
-              var card = array[i].card;
-              let value = array[i].value;
-              let tripleDigit = card;
-              let doubleDigit = card.slice(1);
-              let singleDigit = card.slice(2);
-
-              let sum1 = 0;
-              let sum2 = 0;
-              let sum3 = 0;
-              let data1 = array.find(
-                (element) => element.card === tripleDigit
-              );
-              sum1 = data1.value * 900;
-              let data2 = array.find(
-                (element) => element.card === doubleDigit
-              );
-              sum2 = data2.value * 90;
-              let data3 = array.find(
-                (element) => element.card === singleDigit
-              );
-              sum3 = data3.value * 9;
-              let sum = sum1 + sum2 + sum3;
-
-              finalArray.push(card);
-              playerSumArray.push(sum);
-            }
-            return { finalArray, playerSumArray };
+  
+  console.log(room.mode, "396 (Updated High Logic)");
+  console.log("+++++++++++setMode is on+++++++++");
+  console.log(
+    "+++++++++++++++++++High++++++++++++++++++++++++++++++++"
+  );
+  
+  // Refresh room data
+  room = await tripleChance.findById(roomId);
+  
+  var slot;
+  var totalSum = room.totalBetSum;
+  
+  // NEW: Check if we have high mode players data
+  if (room.highModePlayers && room.highModePlayers.length > 0) {
+    console.log(`Processing High mode for ${room.highModePlayers.length} player(s)`);
+    console.log('High mode players data:', room.highModePlayers);
+    
+    // If multiple high mode players, select one randomly
+    let selectedHighPlayer;
+    if (room.highModePlayers.length > 1) {
+      const randomIndex = Math.floor(Math.random() * room.highModePlayers.length);
+      selectedHighPlayer = room.highModePlayers[randomIndex];
+      console.log(`Multiple High mode players. Randomly selected player: ${selectedHighPlayer.playerId}`);
+    } else {
+      selectedHighPlayer = room.highModePlayers[0];
+      console.log(`Single High mode player selected: ${selectedHighPlayer.playerId}`);
+    }
+    
+    // Find the card with highest bet value from selected player's cardValueSet
+    if (selectedHighPlayer.cardValueSet && selectedHighPlayer.cardValueSet.length > 0) {
+      let highestBetCard = selectedHighPlayer.cardValueSet[0];
+      let highestValue = selectedHighPlayer.cardValueSet[0].value || 0;
+      
+      for (const cardData of selectedHighPlayer.cardValueSet) {
+        const cardValue = cardData.value || 0;
+        if (cardValue > highestValue) {
+          highestValue = cardValue;
+          highestBetCard = cardData;
+        }
+      }
+      
+      console.log(`Highest bet card from player ${selectedHighPlayer.playerId}:`, highestBetCard);
+      
+      // Process the winning card based on digit length
+      const winningCard = highestBetCard.card.toString();
+      
+      if (winningCard.length === 1) {
+        // Single digit - add 2 random digits AT THE FRONT
+        const randomTwoDigits = Math.floor(Math.random() * 90 + 10).toString(); // 10-99
+        slot = randomTwoDigits + winningCard; // "45" + "3" = "453"
+        console.log(`Single digit card "${winningCard}". Converted to: ${slot} (random digits in front)`);
+      } else if (winningCard.length === 2) {
+        // Double digit - add 1 random digit AT THE FRONT
+        const randomDigit = Math.floor(Math.random() * 10).toString(); // 0-9
+        slot = randomDigit + winningCard; // "4" + "33" = "433"
+        console.log(`Double digit card "${winningCard}". Converted to: ${slot} (random digit in front)`);
+      } else if (winningCard.length === 3) {
+        // Triple digit - use as is
+        slot = winningCard;
+        console.log(`Triple digit card used as is: ${slot}`);
+      } else {
+        // Fallback: generate random 3-digit number
+        slot = Math.floor(Math.random() * 900 + 100).toString();
+        console.log(`Invalid card length. Using random: ${slot}`);
+      }
+    } else {
+      console.log("No card data for high mode player. Checking room cardsValue1...");
+      
+      // Fallback: Use room.cardsValue1 to find highest bet
+      if (room.cardsValue1 && room.cardsValue1.length > 0) {
+        let highestBetCard = room.cardsValue1[0];
+        let highestValue = room.cardsValue1[0].value || 0;
+        
+        for (const cardData of room.cardsValue1) {
+          const cardValue = cardData.value || 0;
+          if (cardValue > highestValue) {
+            highestValue = cardValue;
+            highestBetCard = cardData;
           }
-          
-          // Usage:
-          let result = findCardsInRange(room.cardsValue1);
-          let output = result.finalArray;
-          console.log(output.length, "kkkk");
-          let outputPlayerSumArray = result.playerSumArray;
+        }
+        
+        const winningCard = highestBetCard.card.toString();
+        
+        if (winningCard.length === 1) {
+          const randomTwoDigits = Math.floor(Math.random() * 90 + 10).toString();
+          slot = randomTwoDigits + winningCard;
+          console.log(`Fallback: Single digit card "${winningCard}" -> ${slot}`);
+        } else if (winningCard.length === 2) {
+          const randomDigit = Math.floor(Math.random() * 10).toString();
+          slot = randomDigit + winningCard;
+          console.log(`Fallback: Double digit card "${winningCard}" -> ${slot}`);
+        } else {
+          slot = winningCard;
+          console.log(`Fallback: Using card "${winningCard}" as is`);
+        }
+      } else {
+        console.log("No card data available. Using random number.");
+        slot = Math.floor(Math.random() * 900 + 100).toString();
+      }
+    }
+  } else {
+    // OLD LOGIC: Execute if no high mode player data found
+    console.log("No high mode player data found. Using original High logic.");
+    
+    function findCardsInRange(arr) {
+      var array = arr;
+      let final = array.length - 1;
+      let initial = array.length - 1000;
+      
+      var totalSum = room.totalBetSum;
+      let finalArray = [];
+      let playerSumArray = [];
+      for (let i = final; i >= initial; i--) {
+        var card = array[i].card;
+        let value = array[i].value;
+        let tripleDigit = card;
+        let doubleDigit = card.slice(1);
+        let singleDigit = card.slice(2);
 
-          //checking if bet==0then random result will be shouwn
-          var totalSum = room.totalBetSum;
-          var slot;
-          if (totalSum == 0) {
-            console.log("sum is zero");
-            let RandomIndex = Math.floor(Math.random() * output.length);
-            console.log(typeof RandomIndex, "RandomIndex");
-            slot = output[RandomIndex];
-            console.log(typeof slot, "kkkkk");
-          } else if (output.length == 0) {
-            console.log("output length is zero");
-            let RandomNumber = Math.floor(Math.random() * 800) + 100;
-            let stringRandomNumber = RandomNumber.toString();
-            console.log(typeof stringRandomNumber, "RandomIndex");
-            slot = stringRandomNumber;
-          } else {
-            let correspondingIndex = [];
+        let sum1 = 0;
+        let sum2 = 0;
+        let sum3 = 0;
+        let data1 = array.find(
+          (element) => element.card === tripleDigit
+        );
+        sum1 = data1.value * 900;
+        let data2 = array.find(
+          (element) => element.card === doubleDigit
+        );
+        sum2 = data2.value * 90;
+        let data3 = array.find(
+          (element) => element.card === singleDigit
+        );
+        sum3 = data3.value * 9;
+        let sum = sum1 + sum2 + sum3;
 
-            let maxNumber = Math.max(...outputPlayerSumArray);
-            for (let element of outputPlayerSumArray) {
-              if (element == maxNumber) {
-                let index = outputPlayerSumArray.indexOf(element);
-                correspondingIndex.push(output[index]);
-                outputPlayerSumArray.splice(index, 1);
-                output.splice(index, 1);
-              }
-            }
+        finalArray.push(card);
+        playerSumArray.push(sum);
+      }
+      return { finalArray, playerSumArray };
+    }
+    
+    // Usage:
+    let result = findCardsInRange(room.cardsValue1);
+    let output = result.finalArray;
+    console.log(output.length, "kkkk");
+    let outputPlayerSumArray = result.playerSumArray;
 
-            console.log(
-              correspondingIndex,
-              "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
-            );
-            let indexes = Math.floor(
-              Math.random() * correspondingIndex.length
-            );
-            console.log(correspondingIndex[indexes]);
-            slot = correspondingIndex[indexes];
-          }
-          io.to(roomId).emit("slot", slot);
-          console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
+    //checking if bet==0then random result will be shouwn
+    var totalSum = room.totalBetSum;
+    var slot;
+    if (totalSum == 0) {
+      console.log("sum is zero");
+      let RandomIndex = Math.floor(Math.random() * output.length);
+      console.log(typeof RandomIndex, "RandomIndex");
+      slot = output[RandomIndex];
+      console.log(typeof slot, "kkkkk");
+    } else if (output.length == 0) {
+      console.log("output length is zero");
+      let RandomNumber = Math.floor(Math.random() * 800) + 100;
+      let stringRandomNumber = RandomNumber.toString();
+      console.log(typeof stringRandomNumber, "RandomIndex");
+      slot = stringRandomNumber;
+    } else {
+      let correspondingIndex = [];
 
-          // API calls in parallel
-          const apiUrl1 = "https://admin.khelojeetogame.com/api/live-data-from-node";
-          const requestData1 = {
-            win_number: slot.toString(),
-            game_name: "tripleChance",
-          };
+      let maxNumber = Math.max(...outputPlayerSumArray);
+      for (let element of outputPlayerSumArray) {
+        if (element == maxNumber) {
+          let index = outputPlayerSumArray.indexOf(element);
+          correspondingIndex.push(output[index]);
+          outputPlayerSumArray.splice(index, 1);
+          output.splice(index, 1);
+        }
+      }
 
-          const apiUrl2 = "https://admin.khelojeetogame.com/api/result-from-node";
-          const requestData2 = {
-            win_number: slot.toString(),
-            game_id: room.gameId,
-          };
+      console.log(
+        correspondingIndex,
+        "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+      );
+      let indexes = Math.floor(
+        Math.random() * correspondingIndex.length
+      );
+      console.log(correspondingIndex[indexes]);
+      slot = correspondingIndex[indexes];
+    }
+  }
+  
+  io.to(roomId).emit("slot", slot);
+  console.log(slot, "+++++++++++slottttttttttttttt+++++++++");
 
-          try {
-            // Run both API calls in parallel
-            const [response1, response2] = await Promise.all([
-              axios.post(apiUrl1, requestData1),
-              axios.post(apiUrl2, requestData2),
-            ]);
+  // API calls in parallel
+  const apiUrl1 = "https://admin.khelojeetogame.com/api/live-data-from-node";
+  const requestData1 = {
+    win_number: slot.toString(),
+    game_name: "tripleChance",
+  };
 
-            // Logs for both responses
-            console.log(
-              "live-data-from-node requestData1",
-              requestData1,
-              response1.data
-            );
-            console.log(
-              "requestData2 + result-from-node",
-              requestData2,
-              response2.data
-            );
+  const apiUrl2 = "https://admin.khelojeetogame.com/api/result-from-node";
+  const requestData2 = {
+    win_number: slot.toString(),
+    game_id: room.gameId,
+  };
 
-            console.log("Both API calls completed successfully");
-          } catch (error) {
-            console.error(error, "++++++Error in one of the API calls++++++");
-          }
-          
-        } else if (room.mode == "Low") {
+  try {
+    // Run both API calls in parallel
+    const [response1, response2] = await Promise.all([
+      axios.post(apiUrl1, requestData1),
+      axios.post(apiUrl2, requestData2),
+    ]);
+
+    // Logs for both responses
+    console.log(
+      "live-data-from-node requestData1",
+      requestData1,
+      response1.data
+    );
+    console.log(
+      "requestData2 + result-from-node",
+      requestData2,
+      response2.data
+    );
+
+    console.log("Both API calls completed successfully");
+  } catch (error) {
+    console.error(error, "++++++Error in one of the API calls++++++");
+  }
+  
+} else if (room.mode == "Low") {
           
           // API call for bet data
           // const betData = await fetchBetData(roomId, room.gameId);
@@ -1516,12 +1603,12 @@ socket.on("start", async (body) => {
           if (room.mode == "HighMedium") {
             
             // API call for bet data
-            const betData = await fetchBetData(roomId, room.gameId);
-            if (betData.success) {
-              room.totalBetSum = betData.totalBetSum;
-              room.cardsValue1 = betData.cardsValue1;
-              await room.save();
-            }
+            // const betData = await fetchBetData(roomId, room.gameId);
+            // if (betData.success) {
+            //   room.totalBetSum = betData.totalBetSum;
+            //   room.cardsValue1 = betData.cardsValue1;
+            //   await room.save();
+            // }
             
             // mode will be high Medium
             console.log("+++++++++++ setMode is on+++++++++");
@@ -1666,6 +1753,10 @@ socket.on("start", async (body) => {
         room.totalBetSum = 0;
         room.mode = "Medium";
 
+        if (room.highModePlayers) {
+  room.highModePlayers = [];
+}
+
         await room.save();
 
         console.log("one round complete");
@@ -1717,143 +1808,170 @@ socket.on("start", async (body) => {
       }
     }
   });
-  
-  socket.on("bet", async (body) => {
-    try {
-      const data = JSON.parse(body);
-      const { roomId, playerId, cardValueSet, start_point, playerBetSum, mode } = data;
-      
-      // Validate data
-      if (!roomId || !playerId) {
-        console.log("Invalid bet data received");
-        return;
-      }
-      
-      let room = await tripleChance.findById(roomId);
-      if (!room) {
-        console.log(`Room ${roomId} not found`);
-        return;
-      }
 
-      console.log(`Bet received - Room: ${roomId}, Player: ${playerId}, BetSum: ${playerBetSum}, Mode: ${mode}`);
-      
-      // Convert to numbers
-      const betAmount = parseInt(playerBetSum) || 0;
-      const playerMode = mode || "Low";
-      
-      // Debug: Check if this is a duplicate call (same bet amount)
-      const existingPlayer = room.players.find(p => p.playerId.toString() === playerId.toString());
-      if (existingPlayer && existingPlayer.playerBetSum === betAmount && existingPlayer.mode === playerMode) {
-        console.log(`Duplicate bet from player ${playerId}, skipping...`);
-        return;
-      }
-      
-      // Save player data with mode
-      const playerIndex = room.players.findIndex(p => p.playerId.toString() === playerId.toString());
-      
-      if (playerIndex === -1) {
-        // New player
-        room.players.push({
-          playerId,
-          playerBetSum: betAmount,
-          mode: playerMode,
-          lastBetTime: Date.now()
-        });
-        console.log(`New player added: ${playerId} with bet: ${betAmount}`);
-      } else {
-        // Update existing player
-        room.players[playerIndex].playerBetSum = betAmount;
-        room.players[playerIndex].mode = playerMode;
-        room.players[playerIndex].lastBetTime = Date.now();
-        console.log(`Player ${playerId} updated. Bet: ${betAmount}`);
-      }
+socket.on("bet", async (body) => {
+  try {
+    const data = JSON.parse(body);
+    const { roomId, playerId, cardValueSet, start_point, playerBetSum, mode } = data;
+    
+    // Validate data
+    if (!roomId || !playerId) {
+      console.log("Invalid bet data received");
+      return;
+    }
+    
+    let room = await tripleChance.findById(roomId);
+    if (!room) {
+      console.log(`Room ${roomId} not found`);
+      return;
+    }
 
-      // Update cards and total bet sum only if bet > 0 and cardValueSet has data
-      if (betAmount > 0 && cardValueSet && cardValueSet.length > 0) {
-        const updateAllCards = (array, cardValueSet) => {
-          for (const item of array) {
-            const cardValue = cardValueSet.find((card) => card.card === item.card);
-            if (cardValue) {
-              item.value = item.value + cardValue.value;
-            }
-          }
-        };
-        
-        updateAllCards(room.cardsValue1, cardValueSet);
-        room.totalBetSum += betAmount;
-      }
+    console.log(`Bet received - Room: ${roomId}, Player: ${playerId}, BetSum: ${playerBetSum}, Mode: ${mode}`);
+    
+    // Convert to numbers
+    const betAmount = parseInt(playerBetSum) || 0;
+    const playerMode = mode || "Low";
+    
+    // Debug: Check if this is a duplicate call (same bet amount)
+    const existingPlayer = room.players.find(p => p.playerId.toString() === playerId.toString());
+    if (existingPlayer && existingPlayer.playerBetSum === betAmount && existingPlayer.mode === playerMode) {
+      console.log(`Duplicate bet from player ${playerId}, skipping...`);
+      return;
+    }
+    
+    // Save player data with mode
+    const playerIndex = room.players.findIndex(p => p.playerId.toString() === playerId.toString());
+    
+    if (playerIndex === -1) {
+      // New player
+      room.players.push({
+        playerId,
+        playerBetSum: betAmount,
+        mode: playerMode,
+        lastBetTime: Date.now()
+      });
+      console.log(`New player added: ${playerId} with bet: ${betAmount} and mode: ${playerMode}`);
+    } else {
+      // Update existing player
+      room.players[playerIndex].playerBetSum = betAmount;
+      room.players[playerIndex].mode = playerMode;
+      room.players[playerIndex].lastBetTime = Date.now();
+      console.log(`Player ${playerId} updated. Bet: ${betAmount}, Mode: ${playerMode}`);
+    }
 
-      // Filter out players with 0 bet or inactive players
-      const activePlayers = room.players.filter(player => {
-        const playerBet = parseInt(player.playerBetSum) || 0;
-        return playerBet > 0;
-      });
-      
-      console.log(`Active players count: ${activePlayers.length}`);
+    // Update cards and total bet sum only if bet > 0 and cardValueSet has data
+    if (betAmount > 0 && cardValueSet && cardValueSet.length > 0) {
+      const updateAllCards = (array, cardValueSet) => {
+        for (const item of array) {
+          const cardValue = cardValueSet.find((card) => card.card === item.card);
+          if (cardValue) {
+            item.value = item.value + cardValue.value;
+          }
+        }
+      };
+      
+      updateAllCards(room.cardsValue1, cardValueSet);
+      room.totalBetSum += betAmount;
+    }
 
-      // Mode calculation logic
-      if (activePlayers.length === 0) {
-        // No active players with bets
-        if (room.players.length > 0) {
-          // If there are players but no bets, use the first player's mode
-          room.mode = room.players[0].mode || "Medium";
-          console.log(`No active bets. Using first player mode: ${room.mode}`);
-        } else {
-          room.mode = "Medium";
-          console.log(`No players. Default mode set to: Medium`);
-        }
-      } else if (activePlayers.length === 1) {
-        // Only one player with bet
-        room.mode = activePlayers[0].mode || "Low";
-        console.log(`Single active player. Mode set to: ${room.mode} from player: ${activePlayers[0].playerId}`);
-      } else {
-        // Multiple players with bets
-        const totalAllPlayerBets = activePlayers.reduce((sum, player) => {
-          return sum + (parseInt(player.playerBetSum) || 0);
-        }, 0);
-        
-        console.log(`Total active bets: ${totalAllPlayerBets}`);
-        
-        // Calculate 80% threshold
-        const threshold = totalAllPlayerBets * 0.8;
-        
-        // Filter players within 80% threshold
-        const eligiblePlayers = activePlayers.filter(player => {
-          return (parseInt(player.playerBetSum) || 0) <= threshold;
-        });
-        
-        console.log(`Eligible players count: ${eligiblePlayers.length}`);
-        
-        if (eligiblePlayers.length > 0) {
-          // Find player with highest bet among eligible players
-          const highestBetPlayer = eligiblePlayers.reduce((prev, current) => {
-            const prevBet = parseInt(prev.playerBetSum) || 0;
-            const currentBet = parseInt(current.playerBetSum) || 0;
-            return prevBet > currentBet ? prev : current;
-          });
-          
-          room.mode = highestBetPlayer.mode || "Low";
-          console.log(`Multiple players. Mode set to: ${room.mode} from player: ${highestBetPlayer.playerId}`);
-        } else {
-          // If no eligible players, use the player with highest bet
-          const highestBetPlayer = activePlayers.reduce((prev, current) => {
-            const prevBet = parseInt(prev.playerBetSum) || 0;
-            const currentBet = parseInt(current.playerBetSum) || 0;
-            return prevBet > currentBet ? prev : current;
-          });
-          room.mode = highestBetPlayer.mode || "Low";
-          console.log(`No eligible within 80%. Using highest bet player mode: ${room.mode}`);
-        }
-      }
+    // NEW LOGIC: Check if any player has High mode
+    const highModePlayers = room.players.filter(player => player.mode === "High");
+    
+    if (highModePlayers.length > 0) {
+      // If there are players with High mode, directly set room mode to High
+      room.mode = "High";
+      
+      // IMPORTANT: Store high mode player data in room
+      // We need to store cardValueSet from the current bet data
+      room.highModePlayers = highModePlayers.map(player => ({
+        playerId: player.playerId,
+        playerBetSum: player.playerBetSum,
+        // Store cardValueSet from current bet data for the specific player
+        cardValueSet: (player.playerId.toString() === playerId.toString()) ? cardValueSet : []
+      }));
+      
+      console.log(`High mode detected. ${highModePlayers.length} player(s) with High mode. Room mode set to: High`);
+      console.log(`Stored high mode players:`, room.highModePlayers);
+      
+      // Skip all other calculations
+      room = await room.save();
+      io.to(roomId).emit("playersBetInfo", room.players);
+      console.log(`Room saved with High mode`);
+      return;
+    }
 
-      room = await room.save();
-      io.to(roomId).emit("playersBetInfo", room.players);
-      console.log(`Room saved. Current mode: ${room.mode}`);
-      
-    } catch (error) {
-      console.error("Error in bet event:", error);
-    }
-  });
+    // OLD LOGIC: Only execute if no player has High mode
+    // Filter out players with 0 bet or inactive players
+    const activePlayers = room.players.filter(player => {
+      const playerBet = parseInt(player.playerBetSum) || 0;
+      return playerBet > 0;
+    });
+    
+    console.log(`Active players count: ${activePlayers.length}`);
+
+    // Mode calculation logic (only if no High mode players)
+    if (activePlayers.length === 0) {
+      // No active players with bets
+      if (room.players.length > 0) {
+        // If there are players but no bets, use the first player's mode
+        room.mode = room.players[0].mode || "Medium";
+        console.log(`No active bets. Using first player mode: ${room.mode}`);
+      } else {
+        room.mode = "Medium";
+        console.log(`No players. Default mode set to: Medium`);
+      }
+    } else if (activePlayers.length === 1) {
+      // Only one player with bet
+      room.mode = activePlayers[0].mode || "Low";
+      console.log(`Single active player. Mode set to: ${room.mode} from player: ${activePlayers[0].playerId}`);
+    } else {
+      // Multiple players with bets
+      const totalAllPlayerBets = activePlayers.reduce((sum, player) => {
+        return sum + (parseInt(player.playerBetSum) || 0);
+      }, 0);
+      
+      console.log(`Total active bets: ${totalAllPlayerBets}`);
+      
+      // Calculate 80% threshold
+      const threshold = totalAllPlayerBets * 0.8;
+      
+      // Filter players within 80% threshold
+      const eligiblePlayers = activePlayers.filter(player => {
+        return (parseInt(player.playerBetSum) || 0) <= threshold;
+      });
+      
+      console.log(`Eligible players count: ${eligiblePlayers.length}`);
+      
+      if (eligiblePlayers.length > 0) {
+        // Find player with highest bet among eligible players
+        const highestBetPlayer = eligiblePlayers.reduce((prev, current) => {
+          const prevBet = parseInt(prev.playerBetSum) || 0;
+          const currentBet = parseInt(current.playerBetSum) || 0;
+          return prevBet > currentBet ? prev : current;
+        });
+        
+        room.mode = highestBetPlayer.mode || "Low";
+        console.log(`Multiple players. Mode set to: ${room.mode} from player: ${highestBetPlayer.playerId}`);
+      } else {
+        // If no eligible players, use the player with highest bet
+        const highestBetPlayer = activePlayers.reduce((prev, current) => {
+          const prevBet = parseInt(prev.playerBetSum) || 0;
+          const currentBet = parseInt(current.playerBetSum) || 0;
+          return prevBet > currentBet ? prev : current;
+        });
+        room.mode = highestBetPlayer.mode || "Low";
+        console.log(`No eligible within 80%. Using highest bet player mode: ${room.mode}`);
+      }
+    }
+
+    room = await room.save();
+    io.to(roomId).emit("playersBetInfo", room.players);
+    console.log(`Room saved. Current mode: ${room.mode}`);
+    
+  } catch (error) {
+    console.error("Error in bet event:", error);
+  }
+});
 
   socket.on("clearAll", async () => {
     try {
@@ -1952,7 +2070,6 @@ socket.on("start", async (body) => {
   });
 });
 
-// Endpoint to clear the database
 app.post("/clear-database", async (req, res) => {
   try {
     console.log("Clearing database...");
