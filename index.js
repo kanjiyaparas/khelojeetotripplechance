@@ -1132,7 +1132,7 @@ socket.on("start", async (body) => {
           // CHANGED: Medium mode now checks 50% to 90% range
           if (!foundSlot) {
             const minPercentage = 0.5; // 50% lower bound
-            const maxPercentage = 0.9; // 90% upper bound (CHANGED from 60% to 90%)
+            const maxPercentage = 0.8; // 90% upper bound (CHANGED from 60% to 90%)
             
             let minPayout = totalSum * minPercentage;
             let maxPayout = totalSum * maxPercentage;
@@ -1516,7 +1516,7 @@ socket.on("start", async (body) => {
           // CHANGED: Low mode now checks 40% to 80% range
           if (!foundSlot) {
             const minPercentage = 0.4; // 40% lower bound (CHANGED from 30% to 40%)
-            const maxPercentage = 0.8; // 80% upper bound (CHANGED from 95% to 80%)
+            const maxPercentage = 0.6; // 80% upper bound (CHANGED from 95% to 80%)
             
             let maxPayout = totalSum * maxPercentage;
             let minPayout = totalSum * minPercentage;
@@ -1658,7 +1658,7 @@ socket.on("start", async (body) => {
                 let sum = sum1 + sum2 + sum3;
                 // CHANGED: HighMedium mode now checks 90% to 200% range
                 if (
-                  (sum >= 0.9 * totalSum && sum <= 2.0 * totalSum) // 90% to 200%
+                  (sum >= 0.8 * totalSum && sum <= 1.5 * totalSum) // 90% to 200%
                 ) {
                   finalArray.push(card);
                   playerSumArray.push(sum);
@@ -1925,7 +1925,7 @@ socket.on("bet", async (body) => {
       room.mode = activePlayers[0].mode || "Low";
       console.log(`Single active player. Mode set to: ${room.mode} from player: ${activePlayers[0].playerId}`);
     } else {
-      // Multiple players with bets
+      // Multiple players with bets - NEW LOGIC WITH CARD VALUE MULTIPLICATION
       const totalAllPlayerBets = activePlayers.reduce((sum, player) => {
         return sum + (parseInt(player.playerBetSum) || 0);
       }, 0);
@@ -1933,25 +1933,58 @@ socket.on("bet", async (body) => {
       console.log(`Total active bets: ${totalAllPlayerBets}`);
       
       // Calculate 80% threshold
-      const threshold = totalAllPlayerBets * 0.8;
+      const threshold = totalAllPlayerBets * 1.0;
       
-      // Filter players within 80% threshold
+      // NEW: Function to calculate card multiplied bet sum
+      const calculateCardMultipliedSum = (player) => {
+        let sum = parseInt(player.playerBetSum) || 0;
+        
+        // Check if player has cardValueSet in current bet data
+        if (player.playerId.toString() === playerId.toString() && cardValueSet) {
+          // For current player, use the cardValueSet from current bet
+          let maxDigits = 0;
+          cardValueSet.forEach(card => {
+            // Check card number digits
+            const cardStr = card.card.toString();
+            if (cardStr.length === 1) maxDigits = Math.max(maxDigits, 1);
+            else if (cardStr.length === 2) maxDigits = Math.max(maxDigits, 2);
+            else if (cardStr.length === 3) maxDigits = Math.max(maxDigits, 3);
+          });
+          
+          // Apply multiplier based on max digits
+          if (maxDigits === 1) sum *= 9;
+          else if (maxDigits === 2) sum *= 99;
+          else if (maxDigits === 3) sum *= 999;
+        }
+        
+        return sum;
+      };
+      
+      // Filter players within 80% threshold AND whose multiplied sum <= 1000
       const eligiblePlayers = activePlayers.filter(player => {
-        return (parseInt(player.playerBetSum) || 0) <= threshold;
+        const playerBet = parseInt(player.playerBetSum) || 0;
+        const multipliedSum = calculateCardMultipliedSum(player);
+        
+        const withinThreshold = playerBet <= threshold;
+        const withinMultiplierLimit = multipliedSum <= 1000;
+        
+        console.log(`Player ${player.playerId}: Bet=${playerBet}, MultipliedSum=${multipliedSum}, WithinThreshold=${withinThreshold}, WithinLimit=${withinMultiplierLimit}`);
+        
+        return withinThreshold && withinMultiplierLimit;
       });
       
       console.log(`Eligible players count: ${eligiblePlayers.length}`);
       
       if (eligiblePlayers.length > 0) {
-        // Find player with highest bet among eligible players
-        const highestBetPlayer = eligiblePlayers.reduce((prev, current) => {
-          const prevBet = parseInt(prev.playerBetSum) || 0;
-          const currentBet = parseInt(current.playerBetSum) || 0;
-          return prevBet > currentBet ? prev : current;
+        // Find player with highest multiplied sum among eligible players
+        const highestMultiplierPlayer = eligiblePlayers.reduce((prev, current) => {
+          const prevSum = calculateCardMultipliedSum(prev);
+          const currentSum = calculateCardMultipliedSum(current);
+          return prevSum > currentSum ? prev : current;
         });
         
-        room.mode = highestBetPlayer.mode || "Low";
-        console.log(`Multiple players. Mode set to: ${room.mode} from player: ${highestBetPlayer.playerId}`);
+        room.mode = highestMultiplierPlayer.mode || "Low";
+        console.log(`Multiple players. Mode set to: ${room.mode} from player: ${highestMultiplierPlayer.playerId} (Highest multiplied sum)`);
       } else {
         // If no eligible players, use the player with highest bet
         const highestBetPlayer = activePlayers.reduce((prev, current) => {
@@ -1959,8 +1992,8 @@ socket.on("bet", async (body) => {
           const currentBet = parseInt(current.playerBetSum) || 0;
           return prevBet > currentBet ? prev : current;
         });
-        room.mode = highestBetPlayer.mode || "Low";
-        console.log(`No eligible within 80%. Using highest bet player mode: ${room.mode}`);
+        room.mode = "Low";
+        console.log(`No eligible within 80% and multiplier limit. Using highest bet player mode: ${room.mode}`);
       }
     }
 
